@@ -14,7 +14,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-SIMILARITY_THRESHOLD = 0.5
+SIMILARITY_THRESHOLD = 0.4
 KEYWORDS_PROMPT = """\
 You have a document that you need to do a search over. The search \
 is made by keywords that you need to extract from the query. \
