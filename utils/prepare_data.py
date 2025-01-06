@@ -903,7 +903,8 @@ if __name__ == "__main__":
 
 	document_objs = [
 		Document(
-			page_content=", ".join(doc["keywords"]) + doc["summary"],	# keywords as contents
+			# page_content=", ".join(doc["keywords"]) + doc["summary"],	# keywords as contents
+			page_content=doc["summary"],	# summary as contents
 			metadata={**{"text": doc["text"]}, **doc["metadata"]},	# merge text and metadata
 			id=i
 		)
