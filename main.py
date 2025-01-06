@@ -37,9 +37,9 @@ def reset(chat_placeholder: str=DEFAULT_CHAT_PLACEHOLDER) -> None:
 
 
 def make_title() -> None:
-    st.title("...")
+    st.title("Prusseit und Reiss - Suchtool für Ausschreibungstexte")
     with st.expander("Benutzung", icon="ℹ", expanded=False):
-        st.markdown("...")
+        st.markdown("Hier steht ein Erklärungstext")
 
 
 def main():
@@ -70,7 +70,7 @@ def main():
             else:
                 st.error(
                     response.json() + "\n\nWenden Sie sich bitte an "
-                    "die zuständigen Developer."
+                    "die zuständigen Entwickler."
                 )
 
         else:
@@ -84,9 +84,9 @@ def main():
                 vertical_alignment="center"
             )
             n_docs_col.markdown(f"**{n_docs}** Ergebnisse gefunden.")
-            n_show_col_txt.markdown("Pro Seite Zeigen")
+            n_show_col_txt.markdown("Vorschläge pro Seite")
             n = n_show_col.selectbox(
-                "Pro Seite Zeigen",
+                "Vorschläge pro Seite",
                 (5, 10, 20),
                 label_visibility="collapsed"
             )
@@ -106,7 +106,7 @@ def main():
 
         else:
             st.info(
-                "Keine Ergebnisse nach Ihrer Anfrage gefunden."
+                "Keine Ergebnisse auf Ihre Anfrage gefunden."
             )
             reset()
 
