@@ -172,7 +172,7 @@ cython_debug/
 
 
 # DB for Ausscheibungen
-utils/prepare_data.py
-Ausschreibungen/
-data/
+# # utils/prepare_data.py
+# Ausschreibungen/
+# data/
 # chroma_ausscheibungen_meta_db/	# at first, DB will be not constructed in container but just loaded
