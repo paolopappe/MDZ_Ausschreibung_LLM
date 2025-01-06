@@ -43,6 +43,7 @@ COMPILED_PATTERNS = [re.compile(pattern, re.IGNORECASE) for pattern in PATTERNS_
 # Definiere die Schlüsselwörter
 KEYWORDS = ["Hallenanbau", "Lagerhalle", "Vertriebsniederlassung", "Schwimmbad"]
 
+# Prompt für Zusammenfassung
 SUMMARY_PROMPT = """\
 You are given a text that you need to summarize as a sequence of keywords.\
 The keywords summaries will be used later to do a search over text by these\
@@ -57,6 +58,7 @@ The text is below
 
 SUMMARY_TEMPLATE = ChatPromptTemplate.from_template(SUMMARY_PROMPT)
 
+# Pipeline für Zusammefassung
 LLM = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 SUMMARIZER = SUMMARY_TEMPLATE | LLM
 
@@ -808,6 +810,16 @@ def flatten_structure(documents):
 	return new_data
 
 
+def make_summaries(documents):
+	new_docs = []
+	for doc in documents:
+		res = SUMMARIZER.invoke(doc["text"])	# den Text zu Zusammenfassung eingeben
+		summary = res.content
+		doc["summary"] = summary
+		new_docs.append(doc)
+	return new_docs
+
+
 def save_results(documents, output_path):
 	try:
 		with open(output_path, 'w', encoding='utf-8') as f:
@@ -815,16 +827,6 @@ def save_results(documents, output_path):
 		print(f"Ergebnisse erfolgreich in '{output_path}' gespeichert.")
 	except Exception as e:
 		print(f"Fehler beim Speichern der Ergebnisse: {e}")
-
-
-def make_summaries(documents):
-	new_docs = []
-	for doc in documents:
-		res = SUMMARIZER.invoke(doc["text"])
-		summary = res.content
-		doc["summary"] = summary
-		new_docs.append(doc)
-	return new_docs
 
 
 def prepare_data(input_folder, output_folder, save_intermediate=False):
@@ -886,13 +888,14 @@ if __name__ == "__main__":
 	INPUT_PATH = "./Ausschreibungen"
 	OUT_PATH = "./data"
 
-	prepare_data(INPUT_PATH, OUT_PATH, save_intermediate=True)
+	prepare_data(INPUT_PATH, OUT_PATH, save_intermediate=True)	# all die Schritte machen
 
 	data_path = os.path.join(OUT_PATH, "daten.json")	# predefined name in target dir
 	with open(data_path, encoding="utf-8") as f:
-		documents = json.load(f)
+		documents = json.load(f)	# vorbereitete Chunks
 
 
+	# eine Vectorstore erstellen
 	embeddings = OpenAIEmbeddings(model="text-embedding-3-small")	# must be enough for a sequence of keywords
 
 	vector_store = Chroma(
@@ -901,6 +904,7 @@ if __name__ == "__main__":
 		persist_directory="./chroma_ausscheibungen_meta_db",
 	)
 
+	# Jetzt benutzen wir die Zusammenfassungen zum Vergleichen
 	document_objs = [
 		Document(
 			# page_content=", ".join(doc["keywords"]) + doc["summary"],	# keywords as contents

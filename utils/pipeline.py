@@ -15,6 +15,9 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 SIMILARITY_THRESHOLD = 0.35
+# Prompt zum Stichwörter aus der Anfrage extrahieren;
+# der Nutzer gibt eine Anfrage ein, die Stichwörter werden extrahiert
+# und weiter benutzt um mit den Zusammenfassungen abgegliechen zu werden
 KEYWORDS_PROMPT = """\
 You have a document that you need to do a search over. The search \
 is made by keywords that you need to extract from the query. \
@@ -42,6 +45,8 @@ output:
 """
 
 
+# Class für Structured Output; Das bestimmt in welchem Format das LLM
+# den Output ausgeben muss. In unserem Fall sagt es: Gib eine Liste von Stichwörtern
 class TopicKeywords(BaseModel):
 	"""
 	Keywords for a **single topic**.
@@ -51,6 +56,7 @@ class TopicKeywords(BaseModel):
 
 def init_pipeline():
 
+	# die vorbereitete Vectorestore auslesen
 	embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 	vector_store = Chroma(
 		collection_name="ausscheibungen_meta",
@@ -62,25 +68,33 @@ def init_pipeline():
 
 
 	template = ChatPromptTemplate.from_template(KEYWORDS_PROMPT)
+	# jetzt wird das LLM den Output nach `TopicKeywords` ausgeben
 	gpt_structured = gpt.with_structured_output(TopicKeywords)	# no Output Parser needed
 
 	def retrieve(message: AIMessage) -> List[dict]:
 		# adjoin retrieved keywords into a query (by the Pydantic schema)
-		query = " ".join(message.keywords)
+		# die AIMessage ist ein Instance von `TopicKeywords`, das eine Attribute `keywords` hat
+		query = " ".join(message.keywords)	# Stichwörter zusammenstellen
 		res = vector_store.similarity_search_with_relevance_scores(
-			query,
-			k=100,
-			score_threshold=SIMILARITY_THRESHOLD
+			query,	# Liste von Stichwörtern
+			k=100,	# gross genug damit all die relevanten Chunks extrahiert werden
+			score_threshold=SIMILARITY_THRESHOLD	# nur Chunks die relevanter als SIMILARITY_THRESHOLD sind
 		)
 		outputs = []
-		for doc, score in res:
-			outputs.append({
+		for doc, score in res:	# je höher der Score ist, desto relevanter ist der entschprechende Chunk
+			outputs.append({	# in ein dict einpacken
 				"text": doc.metadata.pop("text"),
 				"metadata": doc.metadata,
 				"score": score
 			})
 		return outputs
 
+	# 1. Der Nutzer gibt die Anfrage ein
+	# 2. Die Anfrage wird in den Prompt eingesetzt
+	# 3. Der formatierte Prompt wird ins LLM eingegeben
+	# 4. Das LLM extrahiert eine Liste von Stichwörtern (als AIMessage)
+	# 5. Die Stichwörter werden in `retrieve` in eine Anfrage zusammengetellt,
+	#	und dann werden alle Chunks mit dem höheren als SIMILARITY_THRESHOLD Score zurückgegeben
 	pipeline = template | gpt_structured | retrieve
 
 	return pipeline

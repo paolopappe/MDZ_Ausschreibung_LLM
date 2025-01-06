@@ -11,7 +11,7 @@ BASE_URL = f"http://{HOST}:{PORT}"
 # this app only listens to input queries and returns the results
 @app.route("/get", methods=["GET"])
 def get_relevant_docs():
-	# streamlit logic ensures we have a query
+	# main.py ensures we have a query
 	query = request.args.get("query")
 	# will return up to 100 relevant docs
 	try:
