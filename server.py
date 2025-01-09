@@ -1,4 +1,5 @@
 from flask import Flask, request
+import threading
 from waitress import serve
 
 from utils.pipeline import pipeline
@@ -21,5 +22,17 @@ def get_relevant_docs():
 		return str(e), 400
 	
 
+# ping for dev to see if the server is up
+@app.route("/healthcheck", methods=["GET"])
+def healthcheck():
+	return "ok", 200
+	
+
 def start_server():
     serve(app, host=HOST, port=PORT)
+
+
+# start the backend so it listens to the incoming queries;
+# it runs in a different thread to prevent blocking
+server_thread = threading.Thread(target=start_server, daemon=True)
+server_thread.start()

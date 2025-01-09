@@ -1,17 +1,13 @@
 import streamlit as st
 import requests
-import threading
 from itertools import pairwise
 
-from server import start_server, BASE_URL
+# will start server on import; that is needed because streamlit
+# reruns the whole file on every interaction,
+# and we don't want the server to be started upon that
+from server import BASE_URL
 
 DEFAULT_CHAT_PLACEHOLDER = "Ihre Suchanfrage"
-
-
-def start_server_thread() -> None:
-    # Blocking vermeiden
-    server_thread = threading.Thread(target=start_server, daemon=True)
-    server_thread.start()
 
 
 def init_page() -> None:
@@ -57,7 +53,7 @@ def main():
         on_submit=reset,
         # args=(query, )  # make the query the new placeholder
     ) or st.session_state.query_set:    # oder wenn es schon eine gibt
-        
+
         # es wird gecheckt ob es schon relevante Chunks gefunden wurden
         if not st.session_state.docs:
 
@@ -120,7 +116,4 @@ def main():
 
 
 if __name__ == '__main__':
-    # start the backend so it listens to the incoming queries;
-    # it runs in a different thread to prevent blocking
-    start_server_thread()
     main()
