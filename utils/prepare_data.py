@@ -147,31 +147,31 @@ def process_pdf(pdf_path):
 		return None
 
 
-def process_all_pdfs(folder_path):
-	if not os.path.exists(folder_path):
-		print(f"Fehler: Der Ordner '{folder_path}' existiert nicht.")
-		return []
+# def process_all_pdfs(folder_path):
+# 	if not os.path.exists(folder_path):
+# 		print(f"Fehler: Der Ordner '{folder_path}' existiert nicht.")
+# 		return []
 
-	# Liste aller PDF-Dateien im Ordner
-	pdf_files = [file for file in os.listdir(folder_path) if file.lower().endswith('.pdf')]
+# 	# Liste aller PDF-Dateien im Ordner
+# 	pdf_files = [file for file in os.listdir(folder_path) if file.lower().endswith('.pdf')]
 
-	if not pdf_files:
-		print(f"Keine PDF-Dateien im Ordner '{folder_path}' gefunden.")
-		return []
+# 	if not pdf_files:
+# 		print(f"Keine PDF-Dateien im Ordner '{folder_path}' gefunden.")
+# 		return []
 
-	processed_documents = []
+# 	processed_documents = []
 
-	for pdf_filename in pdf_files:
-		pdf_path = os.path.join(folder_path, pdf_filename)
-		print(f"Verarbeite Datei: {pdf_filename}")
-		result = process_pdf(pdf_path)
-		if result:
-			processed_documents.append(result)
-			print(f"Erfolgreich verarbeitet: {pdf_filename}\n")
-		else:
-			print(f"Verarbeitung fehlgeschlagen: {pdf_filename}\n")
+# 	for pdf_filename in pdf_files:
+# 		pdf_path = os.path.join(folder_path, pdf_filename)
+# 		print(f"Verarbeite Datei: {pdf_filename}")
+# 		result = process_pdf(pdf_path)
+# 		if result:
+# 			processed_documents.append(result)
+# 			print(f"Erfolgreich verarbeitet: {pdf_filename}\n")
+# 		else:
+# 			print(f"Verarbeitung fehlgeschlagen: {pdf_filename}\n")
 
-	return processed_documents
+# 	return processed_documents
 
 
 def extract_keyword(filename):
@@ -829,90 +829,16 @@ def save_results(documents, output_path):
 		print(f"Fehler beim Speichern der Ergebnisse: {e}")
 
 
-def prepare_data(input_folder, output_folder, save_intermediate=False):
-	
-	"""
-	Hauptfunktion zum Verarbeiten aller PDF-Dateien im Ordner "Ausschreibungen".
-	"""
-
-	if not os.path.exists(output_folder):
-		os.makedirs(output_folder, exist_ok=True)
-	
-	documents = process_all_pdfs(input_folder)
-
-	if documents:
-
-		out = lambda path: os.path.join(output_folder, path)
-
-		if save_intermediate:
-			save_results(documents, out("bereinigte_daten.json"))
-
-		documents = process_documents(documents)
-		if save_intermediate: 
-			save_results(documents, out("bereinigte_daten_mit_keywords.json"))
-
-		documents = process_json(documents)
-		if save_intermediate: 
-			save_results(documents, out("bereinigte_daten_mit_chunks.json"))
-
-		documents = process_vorbemerkungen(documents)
-		if save_intermediate: 
-			save_results(documents, out("bereinigte_daten_mit_vorbemerkungen_chunks.json"))
-
-		documents = process_baubeschreibung(documents)
-		if save_intermediate: 
-			save_results(documents, out("bereinigte_daten_mit_baubeschreibung_chunks.json"))
-
-		documents = process_ausschreibungstext(documents)
-		if save_intermediate: 
-			save_results(documents, out("bereinigte_daten_mit_ausschreibungstext_chunks.json"))
-
-		documents = process_data(documents)
-		if save_intermediate: 
-			save_results(documents, out("bereinigte_daten_ueberarbeitung_metadaten_chunks.json"))
-
-		documents = ensure_ascii_conformance(documents)
-		if save_intermediate: 
-			save_results(documents, out("ascii_bereinigte_daten.json"))
-
-		documents = make_summaries(documents)
-		if save_intermediate: 
-			save_results(documents, out("ascii_bereinigte_daten_mit_zf.json"))
-
-		documents = flatten_structure(documents)
-		save_results(documents, out("daten.json"))
-
-
-if __name__ == "__main__":
-
-	INPUT_PATH = "./Ausschreibungen"
-	OUT_PATH = "./data"
-
-	prepare_data(INPUT_PATH, OUT_PATH, save_intermediate=True)	# all die Schritte machen
-
-	data_path = os.path.join(OUT_PATH, "daten.json")	# predefined name in target dir
-	with open(data_path, encoding="utf-8") as f:
-		documents = json.load(f)	# vorbereitete Chunks
-
-
-	# eine Vectorstore erstellen
-	embeddings = OpenAIEmbeddings(model="text-embedding-3-small")	# must be enough for a sequence of keywords
-
-	vector_store = Chroma(
-		collection_name="ausscheibungen_meta",
-		embedding_function=embeddings,
-		persist_directory="./chroma_ausscheibungen_meta_db",
-	)
-
-	# Jetzt benutzen wir die Zusammenfassungen zum Vergleichen
-	document_objs = [
-		Document(
-			# page_content=", ".join(doc["keywords"]) + doc["summary"],	# keywords as contents
-			page_content=doc["summary"],	# summary as contents
-			metadata={**{"text": doc["text"]}, **doc["metadata"]},	# merge text and metadata
-			id=i
-		)
-		for i, doc in enumerate(documents)
-	]
-
-	vector_store.add_documents(documents=document_objs)
+def prepare_data(pdf_path):
+	# TODO: refactoring
+	documents = [process_pdf(pdf_path)]
+	documents = process_documents(documents)
+	documents = process_json(documents)
+	documents = process_vorbemerkungen(documents)
+	documents = process_baubeschreibung(documents)
+	documents = process_ausschreibungstext(documents)
+	documents = process_data(documents)
+	documents = ensure_ascii_conformance(documents)
+	documents = make_summaries(documents)
+	documents = flatten_structure(documents)
+	return documents
