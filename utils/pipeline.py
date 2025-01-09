@@ -1,6 +1,6 @@
 import os
-from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
+from langchain_chroma import Chroma
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain.prompts import ChatPromptTemplate
@@ -97,7 +97,7 @@ def init_pipeline():
 	#	und dann werden alle Chunks mit dem höheren als SIMILARITY_THRESHOLD Score zurückgegeben
 	pipeline = template | gpt_structured | retrieve
 
-	return pipeline
+	return vector_store, pipeline
 
 
-pipeline = init_pipeline()
+vector_store, pipeline = init_pipeline()

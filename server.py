@@ -2,7 +2,7 @@ from flask import Flask, request
 import threading
 from waitress import serve
 
-from utils.pipeline import pipeline
+from utils.pipeline import vector_store, pipeline
 
 app = Flask(__name__)
 HOST = "127.0.0.1"
