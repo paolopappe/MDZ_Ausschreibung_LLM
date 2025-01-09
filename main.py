@@ -5,7 +5,7 @@ from itertools import pairwise
 # will start server on import; that is needed because streamlit
 # reruns the whole file on every interaction,
 # and we don't want the server to be started upon that
-from server import BASE_URL
+from server import BASE_URL, vector_store
 
 DEFAULT_CHAT_PLACEHOLDER = "Ihre Suchanfrage"
 
@@ -38,8 +38,8 @@ def make_title() -> None:
     # Titel der App
     st.title("Prusseit und Reiss - Suchtool für Ausschreibungstexte")
     # Erklärungstext für die Nutzer
-    with st.expander("Benutzung", icon="ℹ", expanded=False):
-        st.markdown("Hier steht ein Erklärungstext")
+    # with st.expander("Benutzung", icon="ℹ", expanded=False):
+    #     st.markdown("Hier steht ein Erklärungstext")
 
 
 def main():
