@@ -48,10 +48,6 @@ def make_title() -> None:
 
 def main():
 
-    # start the backend so it listens to the incoming queries;
-    # it runs in a different thread to prevent blocking
-    start_server_thread()
-
     init_page()
     make_title()
 
@@ -124,4 +120,7 @@ def main():
 
 
 if __name__ == '__main__':
+    # start the backend so it listens to the incoming queries;
+    # it runs in a different thread to prevent blocking
+    start_server_thread()
     main()
