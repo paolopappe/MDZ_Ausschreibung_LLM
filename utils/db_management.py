@@ -4,15 +4,16 @@ from uuid import uuid4
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-import argparse
 
 from utils.prepare_data import prepare_data
+
+STORAGE_PATH = "/ausschreibungen_storage"
 
 
 class DBManager:
 
 	def __init__(self, db_path, collection_name):
-		self._db_path = db_path
+		self._db_path = os.path.join(STORAGE_PATH, db_path)	# for Docker volume
 		self._collection_name = collection_name
 		# must be enough for a sequence of keywords
 		embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
@@ -20,10 +21,10 @@ class DBManager:
 		self.vector_store = Chroma(
 			collection_name=collection_name,
 			embedding_function=embeddings,
-			persist_directory=db_path
+			persist_directory=self._db_path
 		)
 		# read file index from metadata (if not newly initialized)
-		self._file_index_path = os.path.join(db_path, f"__{collection_name}_metadata.json")
+		self._file_index_path = os.path.join(self._db_path, f"__{collection_name}_metadata.json")
 		self._load_file_index()
 
 	def _load_file_index(self):
@@ -100,11 +101,3 @@ _db_manager = DBManager(
     db_path=DB_PATH,
     collection_name=COLLECTION_NAME
 )
-
-
-# for initialization during Docker build
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser()
-	parser.add_argument("dir_path")
-	args = parser.parse_args()
-	_db_manager.from_dir(args.dir_path)

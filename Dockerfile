@@ -7,15 +7,19 @@ COPY . .
 # pip install packages
 RUN pip install -r requirements.txt
 
+# volume to persist data
+RUN mkdir /ausschreibungen_storage
+VOLUME ["/ausschreibungen_storage"]
+
 # exposing default port for streamlit
 EXPOSE 8501
 
 # system variables for the DB
-RUN export DB_PATH="ausschreibungen_db"
-RUN export COLLECTION_NAME="prusseit_reiss"
+ENV DB_PATH="ausschreibungen_db"
+ENV COLLECTION_NAME="prusseit_reiss"
 
 # initialize DB
-RUN python utils/db_management.py Ausschreibungen
+# RUN python _init_db.py Ausschreibungen
 
 # entrypoint to launch app when container is run
 ENTRYPOINT ["python", "-m", "streamlit", "run", "Suche.py"]
