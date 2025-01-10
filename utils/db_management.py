@@ -6,8 +6,7 @@ from langchain_chroma import Chroma
 from langchain_core.documents import Document
 import argparse
 
-# from utils.prepare_data import prepare_data
-from prepare_data import prepare_data
+from utils.prepare_data import prepare_data
 
 
 class DBManager:
@@ -42,11 +41,12 @@ class DBManager:
 	def _chunk2doc(self, chunk: dict) -> Document:
 		return Document(
 			# page_content=", ".join(chunk["keywords"]) + chunk["summary"],	# keywords as contents
-			page_content=chunk["summary"],	# summary as contents
+			# page_content=chunk["summary"],	# summary as contents
+			page_content=", ".join(chunk["keywords"]),
 			metadata={**{"text": chunk["text"]}, **chunk["metadata"]}	# merge text and metadata
 		)
 	
-	def add_dir(self, dir_path):
+	def from_dir(self, dir_path):
 		pdf_paths = [
 			os.path.join(dir_path, filename)
 			for filename in os.listdir(dir_path)
@@ -54,27 +54,29 @@ class DBManager:
 		]
 		self.add_pdfs(pdf_paths)
 
-	def add_pdfs(self, pdf_paths):
-		for pdf_path in pdf_paths:
+	def add_pdf(self, pdf_path, pdf_data=None):
+		if pdf_data:
+			chunks = prepare_data(pdf_data)
+		else:
 			chunks = prepare_data(pdf_path)
-			docs = [
-				self._chunk2doc(chunk)
-				for chunk in chunks
-			]
-			uuids = [str(uuid4()) for _ in range(len(docs))]
-			# first we want to delete the document if it exists;
-			# since we don't know the changes in the document,
-			# we cannot directly use `vector_store.update_document()`
-			# because that would require to know strictly which parts
-			# changed and which corresponding documents with which ids
-			# were associated with those; therefore, we just need to
-			# completely rewrite all the entries for this document so
-			# here we first need to delete all associated docs
-			self.delete_pdf(pdf_path)
-			# now add
-			self.vector_store.add_documents(docs, ids=uuids)
-			# update file index of the instance
-			self._file_index[pdf_path] = uuids
+		docs = [
+			self._chunk2doc(chunk)
+			for chunk in chunks
+		]
+		uuids = [str(uuid4()) for _ in range(len(docs))]
+		# first we want to delete the document if it exists;
+		# since we don't know the changes in the document,
+		# we cannot directly use `vector_store.update_document()`
+		# because that would require to know strictly which parts
+		# changed and which corresponding documents with which ids
+		# were associated with those; therefore, we just need to
+		# completely rewrite all the entries for this document so
+		# here we first need to delete all associated docs
+		self.delete_pdf(pdf_path)
+		# now add
+		self.vector_store.add_documents(docs, ids=uuids)
+		# update file index of the instance
+		self._file_index[pdf_path] = uuids
 		# after everything is added, update the metadata in the DB
 		self._save_file_index()
 
@@ -90,23 +92,19 @@ class DBManager:
 		return self.vector_store._collection.count()
 	
 
+# should be added in Dockerfile
+DB_PATH = os.environ["DB_PATH"]
+COLLECTION_NAME = os.environ["COLLECTION_NAME"]
+
+_db_manager = DBManager(
+    db_path=DB_PATH,
+    collection_name=COLLECTION_NAME
+)
+
+
+# for initialization during Docker build
 if __name__ == "__main__":
-
 	parser = argparse.ArgumentParser()
-
-	parser.add_argument("db_path")
-	parser.add_argument("--col-name")
-	parser.add_argument("--dir-path")
-
+	parser.add_argument("dir_path")
 	args = parser.parse_args()
-
-	db_path = f"ausschreibungen_db_{args.db_path}"
-	collection_name = args.col_name or "ausschreibungen_db_"
-	dir_path = args.dir_path
-
-	db_manager = DBManager(
-		db_path=db_path,
-		collection_name=collection_name
-	)
-	if dir_path and os.path.exists(dir_path):
-		db_manager.add_dir(dir_path)
+	_db_manager.from_dir(args.dir_path)
