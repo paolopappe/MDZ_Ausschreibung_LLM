@@ -1,4 +1,5 @@
 import os
+import io
 import re
 import unicodedata
 import unidecode
@@ -7,9 +8,7 @@ from PyPDF2 import PdfReader
 import openai
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
-from langchain_openai import OpenAIEmbeddings
-from langchain_chroma import Chroma
-from langchain_core.documents import Document
+from typing import Union
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -78,53 +77,59 @@ def clean_metadata(metadata):
 	return cleaned_metadata
 
 
-def process_pdf(pdf_path):
+def process_pdf(pdf_path: Union[str, bytes]):
 	project_info = None
 	lv_info = None
 	cleaned_pages = []
 
 	try:
-		with open(pdf_path, 'rb') as pdf_file:
-			reader = PdfReader(pdf_file)
-			num_pages = len(reader.pages)
 
-			for i in range(num_pages):
-				page = reader.pages[i]
-				page_text = page.extract_text() or ""
-				lines = page_text.split('\n')
-				cleaned_lines = []
+		if isinstance(pdf_path, str):
+			pdf_file = open(pdf_path, 'rb')
+		elif isinstance(pdf_path, bytes):
+			# convert static bytes to IO
+			pdf_file = io.BytesIO(pdf_path)
 
-				for line in lines:
-					# Zeile normalisieren (zusätzliche Leerzeichen entfernen)
-					normalized_line = ' '.join(line.split())
+		reader = PdfReader(pdf_file)
+		num_pages = len(reader.pages)
 
-					# Überprüfen, ob die Zeile mit 'Projekt:' beginnt
-					if normalized_line.startswith('Projekt:'):
-						# Extrahiere die Information nach 'Projekt:'
-						info = normalized_line[len('Projekt:'):].strip()
-						# Speichere die Information nur, wenn sie noch nicht gespeichert wurde
-						if project_info is None:
-							project_info = info
-						continue  # Zeile nicht zu cleaned_lines hinzufügen
+		for i in range(num_pages):
+			page = reader.pages[i]
+			page_text = page.extract_text() or ""
+			lines = page_text.split('\n')
+			cleaned_lines = []
 
-					# Überprüfen, ob die Zeile mit 'LV:' beginnt
-					if normalized_line.startswith('LV:'):
-						# Extrahiere die Information nach 'LV:'
-						info = normalized_line[len('LV:'):].strip()
-						# Speichere die Information nur, wenn sie noch nicht gespeichert wurde
-						if lv_info is None:
-							lv_info = info
-						continue  # Zeile nicht zu cleaned_lines hinzufügen
+			for line in lines:
+				# Zeile normalisieren (zusätzliche Leerzeichen entfernen)
+				normalized_line = ' '.join(line.split())
 
-					# Prüfen, ob die Zeile einem der Muster entspricht
-					if any(pattern.search(normalized_line) for pattern in COMPILED_PATTERNS):
-						continue  # Unerwünschte Zeile überspringen
+				# Überprüfen, ob die Zeile mit 'Projekt:' beginnt
+				if normalized_line.startswith('Projekt:'):
+					# Extrahiere die Information nach 'Projekt:'
+					info = normalized_line[len('Projekt:'):].strip()
+					# Speichere die Information nur, wenn sie noch nicht gespeichert wurde
+					if project_info is None:
+						project_info = info
+					continue  # Zeile nicht zu cleaned_lines hinzufügen
 
-					cleaned_lines.append(line)
+				# Überprüfen, ob die Zeile mit 'LV:' beginnt
+				if normalized_line.startswith('LV:'):
+					# Extrahiere die Information nach 'LV:'
+					info = normalized_line[len('LV:'):].strip()
+					# Speichere die Information nur, wenn sie noch nicht gespeichert wurde
+					if lv_info is None:
+						lv_info = info
+					continue  # Zeile nicht zu cleaned_lines hinzufügen
 
-				# Bereinigten Seitentext rekonstruieren
-				cleaned_page_text = '\n'.join(cleaned_lines)
-				cleaned_pages.append(cleaned_page_text)
+				# Prüfen, ob die Zeile einem der Muster entspricht
+				if any(pattern.search(normalized_line) for pattern in COMPILED_PATTERNS):
+					continue  # Unerwünschte Zeile überspringen
+
+				cleaned_lines.append(line)
+
+			# Bereinigten Seitentext rekonstruieren
+			cleaned_page_text = '\n'.join(cleaned_lines)
+			cleaned_pages.append(cleaned_page_text)
 
 		# Zusammenführen aller bereinigten Seiten
 		full_cleaned_text = '\n'.join(cleaned_pages)
@@ -136,6 +141,8 @@ def process_pdf(pdf_path):
 			'Dateiname': os.path.basename(pdf_path)
 		}
 		cleaned_metadata = clean_metadata(metadata)
+		
+		pdf_file.close()
 
 		return {
 			'text': full_cleaned_text,
@@ -839,6 +846,6 @@ def prepare_data(pdf_path):
 	documents = process_ausschreibungstext(documents)
 	documents = process_data(documents)
 	documents = ensure_ascii_conformance(documents)
-	documents = make_summaries(documents)
+	# documents = make_summaries(documents)
 	documents = flatten_structure(documents)
 	return documents

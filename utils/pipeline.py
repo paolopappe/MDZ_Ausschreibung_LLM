@@ -1,12 +1,13 @@
 import os
-from langchain_openai import OpenAIEmbeddings
-from langchain_chroma import Chroma
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import AIMessage
 from langchain.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from typing import List
 import openai
+
+from utils.db_management import _db_manager
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -56,17 +57,7 @@ class TopicKeywords(BaseModel):
 
 def init_pipeline():
 
-	# die vorbereitete Vectorestore auslesen
-	embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-	vector_store = Chroma(
-		collection_name="ausscheibungen_meta",
-		embedding_function=embeddings,
-		persist_directory="./chroma_ausscheibungen_meta_db",
-	)
-
 	gpt = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-
-
 	template = ChatPromptTemplate.from_template(KEYWORDS_PROMPT)
 	# jetzt wird das LLM den Output nach `TopicKeywords` ausgeben
 	gpt_structured = gpt.with_structured_output(TopicKeywords)	# no Output Parser needed
@@ -75,7 +66,7 @@ def init_pipeline():
 		# adjoin retrieved keywords into a query (by the Pydantic schema)
 		# die AIMessage ist ein Instance von `TopicKeywords`, das eine Attribute `keywords` hat
 		query = " ".join(message.keywords)	# Stichwörter zusammenstellen
-		res = vector_store.similarity_search_with_relevance_scores(
+		res = _db_manager.vector_store.similarity_search_with_relevance_scores(
 			query,	# Liste von Stichwörtern
 			k=100,	# gross genug damit all die relevanten Chunks extrahiert werden
 			score_threshold=SIMILARITY_THRESHOLD	# nur Chunks die relevanter als SIMILARITY_THRESHOLD sind
@@ -97,7 +88,7 @@ def init_pipeline():
 	#	und dann werden alle Chunks mit dem höheren als SIMILARITY_THRESHOLD Score zurückgegeben
 	pipeline = template | gpt_structured | retrieve
 
-	return vector_store, pipeline
+	return pipeline
 
 
-vector_store, pipeline = init_pipeline()
+pipeline = init_pipeline()
