@@ -170,7 +170,5 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-
 # DB (must be prepared on the fly)
 Ausschreibungen/
-ausschreibungen_db_*/

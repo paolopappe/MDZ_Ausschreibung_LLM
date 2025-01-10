@@ -169,3 +169,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# DB (must be prepared on the fly)
+Ausschreibungen/
+
+# exclude pres
+Prusseit_u_Reiss_aktueller_Stand.pptx
