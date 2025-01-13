@@ -22,13 +22,16 @@ Mehr Informationen zum Ansatz finden Sie in der [Präsentation](./Prusseit_u_Rei
 
 ### Voraussetzungen
 
-1. Sie müssen auf Ihrem Gerät Docker Desktop installieren. Wenn Sie diese App noch nicht haben, installieren Sie sie von https://www.docker.com/products/docker-desktop/.
+1. Sie müssen auf Ihrem Gerät Git haben. Wenn Sie es noch nicht haben, installieren Sie es von https://git-scm.com.
+1. Wenn Sie noch Docker Desktop App auf dem Gerät nicht haben, installieren Sie sie von https://www.docker.com/products/docker-desktop/.
 2. Das Tool benutzt das OpenAI GPT-4. Daher müssen Sie einen OpenAI-Account erstellen, wenn Sie ihn noch nicht haben: https://platform.openai.com/docs/overview, und einen API-Key erteilen lassen unter https://platform.openai.com/settings/organization/api-keys. **Der API-Key darf in keinem Fall weitergeleitet werden!**
 
 
 ### Installationsschritte
 
-1. Das Repo mit dem Tool-Source-Code clonen. Dafür Terminal öffnen und die folgenden Kommande eingeben:
+1. Die Docker Desktop App laufen.
+
+2. Das Repo mit dem Tool-Source-Code clonen. Dafür Terminal (Git Bash) öffnen und die folgenden Kommande eingeben:
 
 ```bash
 cd pfad/zu/ihrem/ziel/ordner
@@ -38,9 +41,9 @@ git clone https://github.com/paolopappe/MDZ_Ausschreibung_LLM.git
 cd MDZ_Ausschreibung_LLM
 ```
 
-2. Den API-Key in den File _env.template_ einsetzen und den File auf _.env_ umbenennen.
+3. Den API-Key in den File _env.template_ einsetzen und den File auf _.env_ umbenennen.
 
-3. Den Docker-Image erstellen: das macht Ihre eigene Kopie des Tools auf Ihrem Gerät. In Terminal den Kommand eingeben:
+4. Den Docker-Image erstellen: das macht Ihre eigene Kopie des Tools auf Ihrem Gerät. In Terminal den Kommand eingeben:
 
 ```bash
 docker build -t prusseit_reiss_suchtool:latest . 
@@ -48,13 +51,13 @@ docker build -t prusseit_reiss_suchtool:latest .
 
 Es wird wenige Minuten brauchen.
 
-4. Jetzt starten Sie das Tool.
+5. Jetzt starten Sie das Tool.
 
 ```bash
-docker run -p 8501:8501 --env-file .env prusseit_reiss_suchtool:latest
+docker run -p 8501:8501 --env-file .env --volume prusseit_reiss:/ausschreibungen_storage prusseit_reiss_suchtool:latest
 ```
 
-5. Nachdem Sie den letzten Kommand ausgeführt haben, läuft auf Ihrem Gerät das Tool. Um darauf zuzugreifen, gehen Sie auf den beliebigen Browser und geben Sie ein:
+6. Nachdem Sie den letzten Kommand ausgeführt haben, läuft auf Ihrem Gerät das Tool. Um darauf zuzugreifen, gehen Sie auf den beliebigen Browser und geben Sie ein:
 
 ```text
 http://localhost:8501
@@ -69,4 +72,4 @@ http://localhost:8501
 
 3. Nach der Benutzung stoppen Sie den Container, indem Sie im selben Terminal _Ctrl+C_ clicken.
 
-4. Für wiederholte Benutzung brauchen Sie nach der Installation nur Punkte 4 und 5 des Abschnitts [Installationsschritte](#installationsschritte) durchführen.
+4. Für wiederholte Benutzung brauchen Sie nach der Installation nur Punkte 5 und 6 des Abschnitts [Installationsschritte](#installationsschritte) durchführen (aus dem Ordner _MDZ_Ausschreibung_LLM_ aus dem 2. Punks).
