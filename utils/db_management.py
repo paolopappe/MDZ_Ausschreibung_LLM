@@ -42,8 +42,8 @@ class DBManager:
 	def _chunk2doc(self, chunk: dict) -> Document:
 		return Document(
 			# page_content=", ".join(chunk["keywords"]) + chunk["summary"],	# keywords as contents
-			# page_content=chunk["summary"],	# summary as contents
-			page_content=", ".join(chunk["keywords"]),
+			page_content=chunk["summary"],	# summary as contents
+			# page_content=", ".join(chunk["keywords"]),
 			metadata={**{"text": chunk["text"]}, **chunk["metadata"]}	# merge text and metadata
 		)
 	

@@ -846,6 +846,6 @@ def prepare_data(pdf_path):
 	documents = process_ausschreibungstext(documents)
 	documents = process_data(documents)
 	documents = ensure_ascii_conformance(documents)
-	# documents = make_summaries(documents)
+	documents = make_summaries(documents)
 	documents = flatten_structure(documents)
 	return documents
