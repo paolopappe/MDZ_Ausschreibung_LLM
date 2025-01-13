@@ -72,4 +72,4 @@ http://localhost:8501
 
 3. Nach der Benutzung stoppen Sie den Container, indem Sie im selben Terminal _Ctrl+C_ clicken.
 
-4. Für wiederholte Benutzung brauchen Sie nach der Installation nur Punkte 5 und 6 des Abschnitts [Installationsschritte](#installationsschritte) durchführen (aus dem Ordner _MDZ_Ausschreibung_LLM_ aus dem 2. Punks).
+4. Für wiederholte Benutzung brauchen Sie nach der Installation nur Punkte 5 und 6 des Abschnitts [Installationsschritte](#installationsschritte) durchführen (aus dem Ordner _MDZ_Ausschreibung_LLM_ aus dem 2. Punkt).
