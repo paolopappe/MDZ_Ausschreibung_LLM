@@ -7,10 +7,6 @@ COPY . .
 # pip install packages
 RUN pip install -r requirements.txt
 
-# volume to persist data
-RUN mkdir /ausschreibungen_storage
-VOLUME ["/ausschreibungen_storage"]
-
 # exposing default port for streamlit
 EXPOSE 8501
 
