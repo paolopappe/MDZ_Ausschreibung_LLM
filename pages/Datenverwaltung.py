@@ -58,7 +58,7 @@ def show_data_management_area():
         key=st.session_state.uploader_key   # every type a new key to clear the state 
     )
     if uploaded_files:
-        with st.spinner("Ihre Daten verden vorbereitet. Es kann wenige Minuten dauern."):
+        with st.spinner("Ihre Daten werden vorbereitet. Es kann wenige Minuten dauern."):
             for i, uploaded_file in enumerate(uploaded_files):
                 bytes_data = uploaded_file.getvalue()
                 _db_manager.add_pdf(uploaded_file.name, bytes_data)
