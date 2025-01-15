@@ -7,34 +7,38 @@
 
 ## Übersicht
 
-Das Tool hilft mit der Suche von relevanten Informationen in den Ausschreibungen nach einer freiförmigen Anfrage.
+Das Tool hilft bei der Suche nach relevanten Informationen in Ausschreibungstexten.
 
-Es funktioniert folgendermaßen:
+Funktionsweise:
 
-1. Die PDF-Ausschreibungen werden vorbearbeitet: sie werden nach Kapiteln, Abschnitten uws. auf Chunks geteilt, wo es mit dem LLM für jeden Chunk Stichwörter generiert werden, worum es sich im Chunk handelt.
-2. Das Tool nimmt eine Suchanfrage an und extrahiert daraus auch Stichwörter, also was der/die Nutzer*in mit der Anfrage finden möchte.
-3. Die von der Anfrage extrahierten und in den vorbereiteten Daten liegenden Stichwörter werden nach semantyscher Ähnlichkeit abgegliechen, und dem/der Nutzer*in werden die Chunks zurückgegeben, die am nächsten zur Anfrage stehen.
+1. Die PDF-Ausschreibungen werden vorbearbeitet: 
+sie werden nach Kapiteln, Abschnitten usw. in Chunks unterteilt. Ein LLM generiert für jeden Chunk Stichwörter, die auf meta-Ebene beschreiben, worum es sich in dem jeweiligen Chunk handelt.
+2. Das Tool nimmt eine Suchanfrage an und extrahiert daraus auch Stichwörter, also was der/die Nutzer*in mit der Anfrage suchen möchte.
+3. Die von der Anfrage extrahierten und in den vorbereiteten Daten liegenden Stichwörter werden nach semantischer Ähnlichkeit abgeglichen, und dem/der Nutzer*in werden die Chunks ausgegeben, die am ehesten zur Anfrage passen.
 
-Mehr Informationen zum Ansatz finden Sie in der [Präsentation](./Prusseit_u_Reiss_aktueller_Stand.pptx).
+Weitere Informationen zum Ansatz finden Sie in der [Präsentation](./Prusseit_u_Reiss_aktueller_Stand.pptx).
 
 
 ## Installation
 
 ### Voraussetzungen
 
-1. Sie müssen auf Ihrem Gerät Git haben. Wenn Sie es noch nicht haben, installieren Sie es von https://git-scm.com.
-1. Wenn Sie noch Docker Desktop App auf dem Gerät nicht haben, installieren Sie sie von https://www.docker.com/products/docker-desktop/.
-2. Das Tool benutzt das OpenAI GPT-4. Daher müssen Sie einen OpenAI-Account erstellen, wenn Sie ihn noch nicht haben: https://platform.openai.com/docs/overview, und einen API-Key erteilen lassen unter https://platform.openai.com/settings/organization/api-keys. **Der API-Key darf in keinem Fall weitergeleitet werden!**
+1. Git: Sie müssen auf Ihrem Gerät Git installiert haben. Wenn Sie es noch nicht installiert haben, installieren Sie es von der Webseite https://git-scm.com.
+1. Docker Desktop App: Wenn Sie die Docker Desktop App noch nicht auf Ihrem Gerät installiert haben, laden Sie es bitte unter https://www.docker.com/products/docker-desktop/ herunter und folgen den Installationsanweisungen.
+2. Das Tool benutzt das OpenAI GPT-4 Modell, daher müssen Sie einen OpenAI-Account erstellen, wenn Sie ihn noch nicht haben: https://platform.openai.com/docs/overview, und einen API-Key erteilen lassen unter https://platform.openai.com/settings/organization/api-keys. **Ihr API-Key sollte in keinem Fall weitergegeben werden!**
 
 
 ### Installationsschritte
 
-1. Die Docker Desktop App laufen.
+1. Die Docker Desktop App starten.
 
-2. Das Repo mit dem Tool-Source-Code clonen. Dafür Terminal (Git Bash) öffnen und die folgenden Kommande eingeben:
+2. Das github-Repo (s.u.) auf Ihr Gerät klonen. 
+Dazu öffnen/erstellen Sie in Ihrem Windows-Explorer unter dem gewünschten Pfad den/einen Ordner, unter dem Sie das Tool speichern möchten.
+Machen Sie dort (in diesem Explorer-Fenster) einen Rechtsklick und öffnen Sie Git Bash. 
+Geben Sie in Git Bash nacheinander die folgenden Befehle ein (jeweils danach mit der Enter-Taste bestätigen).
+(Ggf. funktioniert Str+v zum hinein kopieren nicht. Stattdessen Rechtsklick + Einfügen):
 
 ```bash
-cd pfad/zu/ihrem/ziel/ordner
 
 git clone https://github.com/paolopappe/MDZ_Ausschreibung_LLM.git
 
